@@ -20,7 +20,7 @@
         }
     }
 
-    &.jw-state-paused.jw-flag-user-inactive {
+    &.jw-state-paused.jw-flag-user-inactive:not(.jw-flag-seek) {
         .jw-pause-display {
             display: initial;
         }
@@ -71,6 +71,18 @@
                     font-weight: normal;
                 }
             }
+        }
+    }
+
+    &.jw-flag-seek {
+        .jw-icon-back,
+        .jw-icon-settings,
+        .jw-icon-playback {
+            visibility: hidden;
+        }
+
+        .jw-seekbar-thumbnails.jw-open {
+            display: flex;
         }
     }
 
@@ -267,6 +279,23 @@
     // Controls Gradient
     .jw-controls-backdrop {
         background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 35%, transparent 65%, rgba(0, 0, 0, 0.4) 100%);
+    }
+
+    // Seekbar
+    .jw-seekbar-thumbnails {
+        position: absolute;
+        display: none;
+        justify-content: center;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        padding-bottom: 215px;
+
+        .jw-seekbar-thumb.jw-active {
+            border: @white;
+            border-style: solid;
+            border-width: thick;
+        }
     }
 
     // **OUT OF DATE from v1.0**
