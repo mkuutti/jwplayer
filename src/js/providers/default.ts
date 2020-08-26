@@ -23,7 +23,7 @@ export type SeekRange = {
     end: number;
 };
 
-type MetadataType = 'media' | 'id3' | 'emsg' | 'date-range' | 'program-date-time' | 'scte-35' | 'discontinuity';
+export type MetadataType = 'media' | 'id3' | 'emsg' | 'date-range' | 'program-date-time' | 'scte-35' | 'discontinuity';
 
 export type ProviderEvents = {
     [Event.PLAYER_STATE]: {
@@ -136,7 +136,7 @@ export type ProviderEvents = {
     flashBlocked: { value: any };
 }
 
-type ProviderEventNotifications = {
+export type ProviderEventNotifications = {
     [Event.MEDIA_SEEKED]: void;
     [Event.PROVIDER_FIRST_FRAME]: void;
     [Event.MEDIA_BUFFER_FULL]: void;

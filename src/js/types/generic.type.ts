@@ -67,3 +67,12 @@ export type BoundingRect = {
     top: number;
     bottom: number;
 };
+
+declare global {
+    interface Window {
+        jwplayer: {
+            (): () => PlayerAPI;
+            debug: boolean;
+        };
+    }
+}
