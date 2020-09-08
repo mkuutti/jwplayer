@@ -99,7 +99,7 @@ class TizenControls extends Controls {
         const controlbar = this.controlbar = new TizenControlbar(api, model,
             this.playerContainer.querySelector('.jw-hidden-accessibility'));
         controlbar.on('backClick', () => {
-            this.onBackClick(api);
+            this.onBackClick();
         });
 
         // Next Up Tooltip
@@ -126,6 +126,10 @@ class TizenControls extends Controls {
         this.settingsMenu = new SettingsMenu(api, model.player, this.controlbar, localization);
 
         const handleKeydown = (evt: KeyboardEvent) => {
+            if (!this.apiEnabled) {
+                return;
+            }
+
             if (this.controlbar) {
                 this.controlbar.handleKeydown(evt, this.showing, this.instreamState);
             }
@@ -152,7 +156,7 @@ class TizenControls extends Controls {
                     if (this.seekState) {
                         this.exitSeekMode();
                         this.userInactive();
-                        api.play();
+                        this.api.play();
                         return;
                     }
                     this.userActive();
@@ -171,7 +175,7 @@ class TizenControls extends Controls {
                     }
                     if (!this.showing) {
                         this.userActive();
-                        api.playToggle(reasonInteraction());
+                        this.api.playToggle(reasonInteraction());
                     }
                     break;
                 case 415: // play
@@ -180,7 +184,7 @@ class TizenControls extends Controls {
                         return;
                     }
                     if (model.get('state') !== STATE_PLAYING) {
-                        api.play();
+                        this.api.play();
                     }
                     break;
                 case 19: // pause
@@ -190,7 +194,7 @@ class TizenControls extends Controls {
                     }
                     if (model.get('state') !== STATE_PAUSED) {
                         this.userActive();
-                        api.pause();
+                        this.api.pause();
                     }
                     break;
                 case 10252: // play/pause
@@ -201,7 +205,7 @@ class TizenControls extends Controls {
                     if (model.get('state') !== STATE_PAUSED) {
                         this.userActive();
                     }
-                    api.playToggle(reasonInteraction());
+                    this.api.playToggle(reasonInteraction());
                     break;
                 case 412: // Rewind
                     break;
@@ -213,10 +217,10 @@ class TizenControls extends Controls {
                         this.userActive();
                         return;
                     }
-                    this.onBackClick(api);
+                    this.onBackClick();
                     break;
                 case 10182: // Exit/Home
-                    api.remove();
+                    this.api.remove();
                     break;
                 default:
                     break;
@@ -225,8 +229,8 @@ class TizenControls extends Controls {
 
         // Trigger backClick when all videos complete      
         api.on('playlistComplete', () => {
-            this.onBackClick(api);
-        });
+            this.onBackClick();
+        }, this);
 
         // For the TV app to hear events
         document.addEventListener('keydown', handleKeydown);
@@ -249,10 +253,17 @@ class TizenControls extends Controls {
     }
 
     disable(model: ViewModel): void {
-        this.api = null;
+        if (this.apiEnabled) {
+            this.api.off(null, null, this);
+            this.api = null;
+        }
 
         if (this.keydownCallback) {
             document.removeEventListener('keydown', this.keydownCallback);
+        }
+
+        if (this.seekbar) {
+            this.seekbar.destroy();
         }
 
         super.disable.call(this, model);
@@ -262,9 +273,9 @@ class TizenControls extends Controls {
         super.userActive.call(this, timeout);
     }
 
-    onBackClick(api: PlayerAPI): void {
-        api.trigger('backClick');
-        api.remove();
+    onBackClick(): void {
+        this.api.trigger('backClick');
+        this.api.remove();
     }
 
     private seek(): void {
