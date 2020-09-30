@@ -36,7 +36,7 @@
             border-color: @white;
             border-width: medium;
 
-            &.jw-active {
+            &:focus {
                 box-shadow: 0 0 10px 15px rgba(255, 255, 255, 0.3);
             }
 
@@ -129,7 +129,7 @@
     }
 
     // Active Button
-    .jw-icon.jw-button-color.jw-active {
+    .jw-icon.jw-button-color:focus {
         border-radius: 50%;
         background-color: rgba(255, 255, 255, 0.2);
         color: @hover-color;
@@ -218,6 +218,10 @@
             bottom: 0;
             padding: inherit;
             align-items: center;
+
+            &.jw-hidden {
+                display: none;
+            }
         }
 
         .jw-text {

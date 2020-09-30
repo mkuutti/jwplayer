@@ -43,7 +43,7 @@ function isVisibleButton(el: ControlbarElement): boolean {
 }
 
 function isActiveElement(element: HTMLElement): boolean {
-    return element.classList.contains('jw-active');
+    return element === document.activeElement;
 }
 
 function getNextButton(activeButton: Button, layout: ControlbarElement[], toRight: boolean): Button | undefined {
@@ -165,7 +165,6 @@ export default class TizenControlbar extends Controlbar {
         switch (evt.keyCode) {
             case 37: // left-arrow
                 if (isAdsMode && isActiveElement(this.adSkipButton.el)) {
-                    toggleClass(this.adSkipButton.el, 'jw-active', false);
                     this.setActiveButton(this.elements.play);
                     return;
                 }
@@ -177,7 +176,7 @@ export default class TizenControlbar extends Controlbar {
                 break;
             case 39: // right-arrow
                 if (isAdsMode && activeButton && activeButton === this.elements.play) {
-                    toggleClass(this.adSkipButton.el, 'jw-active', true);
+                    this.adSkipButton.el.focus();
                     this.setActiveButton(null);
                     return;
                 }
@@ -238,12 +237,8 @@ export default class TizenControlbar extends Controlbar {
             return;
         }
 
-        if (currentActiveButton) {
-            toggleClass(currentActiveButton.element(), 'jw-active', false);
-        }
-
         if (nextButton) {
-            toggleClass(nextButton.element(), 'jw-active', true);
+            nextButton.element().focus();
         }
 
         this.activeButton = nextButton;
@@ -275,6 +270,10 @@ export default class TizenControlbar extends Controlbar {
 
             buttonContainer.appendChild(newButton.element());
         }
+    }
+
+    toggleVisibility(visible: boolean): void {
+        toggleClass(this.el.querySelector('.jw-bottom-container'), 'jw-hidden', !visible);
     }
 
     destroy(): void {
