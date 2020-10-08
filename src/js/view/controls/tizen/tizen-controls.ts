@@ -32,7 +32,7 @@ class TizenControls extends Controls {
     settingsMenu: SettingsMenu | null;
     showing: boolean;
     instreamState: boolean;
-    keydownCallback: ((evt: KeyboardEvent) => void);
+    keydownCallback: ((this: Document, evt: KeyboardEvent) => void) | null;
     userInactive: any;
     wrapperElement: any;
     addBackdrop: any;
@@ -55,7 +55,7 @@ class TizenControls extends Controls {
         this.settingsMenu = null;
         this.showing = false;
         this.instreamState = false;
-        this.keydownCallback = this.handleKeydown.bind(this);
+        this.keydownCallback = null;
     }
 
     get apiEnabled(): boolean {
@@ -133,9 +133,15 @@ class TizenControls extends Controls {
             this.onBackClick();
         }, this);
 
+        // Remove event listener added in base controls
+        if (this.keydownCallback) {
+            this.playerContainer.removeEventListener('keydown', this.keydownCallback);
+            this.keydownCallback = null;
+        }
+
         // For the TV app to hear events
-        document.addEventListener('keydown', this.handleKeydown);
-        this.keydownCallback = this.handleKeydown;
+        this.keydownCallback = (evt) => this.handleKeydown(evt);
+        document.addEventListener('keydown', this.keydownCallback);
 
         this.addControls();
 
@@ -161,7 +167,9 @@ class TizenControls extends Controls {
             this.api = null;
         }
 
-        document.removeEventListener('keydown', this.keydownCallback);
+        if (this.keydownCallback) {
+            document.removeEventListener('keydown', this.keydownCallback);
+        }
 
         if (this.seekbar) {
             this.seekbar.destroy();
@@ -184,26 +192,47 @@ class TizenControls extends Controls {
             return;
         }
 
+        let playButtonActive = false;
         if (this.controlbar) {
             this.controlbar.handleKeydown(evt, this.showing, this.instreamState);
+            playButtonActive = this.controlbar.activeButton === this.controlbar.elements.play;
         }
+
         switch (evt.keyCode) {
             case 37: // left-arrow
+                if (this.instreamState) {
+                    this.userActive();
+                    return;
+                }
+
                 if (this.seekState) {
                     this.updateSeek(-10);
-                } else if (!this.showing ||
-                    (this.controlbar && this.controlbar.activeButton === this.controlbar.elements.play)) {
-                    this.enterSeekMode();
+                    return;
                 }
+
+                if (!this.showing || playButtonActive) {
+                    this.enterSeekMode();
+                    return;
+                }
+
                 this.userActive();
                 break;
             case 39: // right-arrow
+                if (this.instreamState) {
+                    this.userActive();
+                    return;
+                }
+
                 if (this.seekState) {
                     this.updateSeek(10);
-                } else if (!this.showing ||
-                    (this.controlbar && this.controlbar.activeButton === this.controlbar.elements.play)) {
-                    this.enterSeekMode();
+                    return;
                 }
+
+                if (!this.showing || playButtonActive) {
+                    this.enterSeekMode();
+                    return;
+                }
+
                 this.userActive();
                 break;
             case 38: // up-arrow
@@ -301,6 +330,7 @@ class TizenControls extends Controls {
         this.seekState = true;
         this.seekbar.show();
         this.api.pause();
+        this.userActive();
     }
 
     private exitSeekMode(): void {
@@ -318,6 +348,7 @@ class TizenControls extends Controls {
             return;
         }
         this.seekbar.update(increment);
+        this.userActive();
     }
 }
 
